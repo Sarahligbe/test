@@ -13,6 +13,7 @@ RUN apk add --no-cache curl
 
 # Copy the rest of the backend files
 COPY . /app/
+COPY .env.sample /app/.env
 RUN pip install -r requirements.txt
 
 # Expose the port the app runs on
