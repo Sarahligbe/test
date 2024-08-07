@@ -1,0 +1,5 @@
+          container_volume_path: '/app'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Print Preview Url
+        run: |
+          echo "Preview Url: ${{ steps.deploy.outputs.preview-url }}" 

@@ -1,0 +1,49 @@
+name: Test cd pipeline
+on:
+  push:
+    branches: [dev]
+  workflow_run:
+    workflows: ["PR Deploy"]
+    types:
+      - completed
+    branches: [dev]
+
+jobs:
+  on-success:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build image
+        run: docker build -t anchor-python-bp-dev:latest -f Dockerfile.dev .
+
+      - name: Save image 
+        run: docker save anchor-python-bp-dev:latest | gzip > dev.tar.gz
+
+      - name: Copy image to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          source: "dev.tar.gz"
+          target: "/home/${{ secrets.USERNAME }}/python-test"
+ 
+      - name: Deploy image on server
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+            script: |
+              docker load --input /home/${{ secrets.USERNAME }}/python-test/dev.tar.gz
+              docker compose -f /home/${{ secrets.USERNAME }}/python-test/docker-compose.yml up -d
+              rm -f /home/${{ secrets.USERNAME }}/python-test/dev.tar.gz
+
+  on-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - run: echo 'The triggering workflow failed'
