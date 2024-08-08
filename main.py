@@ -58,7 +58,7 @@ app.include_router(api_version_one)
 @app.get("/", tags=["Home"])
 async def get_root(request: Request) -> dict:
     return JsonResponseDict(
-        message="Welcome to API", status_code=status.HTTP_200_OK, data={"URL": ""}
+        message="Welcome to API hello", status_code=status.HTTP_200_OK, data={"URL": ""}
     )
 
 
