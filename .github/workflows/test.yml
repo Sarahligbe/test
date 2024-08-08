@@ -7,6 +7,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: "username"
+          POSTGRES_PASSWORD: "password"
+          POSTGRES_DB: "test"
+        ports:
+          - 5432:5432
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -30,6 +40,10 @@ jobs:
 
       - name: Copy env file
         run: cp .env.sample .env
+
+      - name: Run migrations
+        run: |
+          alembic upgrade head
 
       - name: Run tests
         run: |
