@@ -17,7 +17,6 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 # Copy the rest of the backend files
 COPY . /app/
-COPY ./.env.sample /app/.env
 
 # Expose the port the app runs on
 EXPOSE 7001
