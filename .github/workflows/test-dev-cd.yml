@@ -32,8 +32,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           script: |
-            docker load --input /home/${{ secrets.USERNAME }}/python-test/dev.tar.gz
-            cat /home/${{ secrets.USERNAME }}/python-test/.env
-            docker compose -f /home/${{ secrets.USERNAME }}/python-test/docker-compose.yml up -d
-            rm -f /home/${{ secrets.USERNAME }}/python-test/dev.tar.gz
+            cd /home/${{ secrets.USERNAME }}/python-test
+            docker load --input dev.tar.gz
+            docker compose -f docker-compose.yml up -d
+            rm -f dev.tar.gz
 
