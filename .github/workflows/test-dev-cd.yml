@@ -2,14 +2,9 @@ name: Test cd pipeline
 on:
   push:
     branches: [main]
-  workflow_run:
-    workflows: ["PR Deploy"]
-    types:
-      - completed
-    branches: [main]
 
 jobs:
-  on-success:
+  build-and-deploy:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
@@ -42,8 +37,3 @@ jobs:
             docker compose -f /home/${{ secrets.USERNAME }}/python-test/docker-compose.yml up -d
             rm -f /home/${{ secrets.USERNAME }}/python-test/dev.tar.gz
 
-  on-failure:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
-    steps:
-      - run: echo 'The triggering workflow failed'
