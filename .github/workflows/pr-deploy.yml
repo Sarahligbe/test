@@ -2,10 +2,6 @@ name: PR Deploy
 on:
   pull_request:
     types: [opened, synchronize, reopened, closed]
-  workflow_run:
-    workflows: ["Test"]
-    types:
-      - completed
 
 jobs:
   deploy-pr:
@@ -13,7 +9,6 @@ jobs:
       name: preview
       url: ${{ steps.deploy.outputs.preview-url }}
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request' }}
     steps:
       - name: Checkout to branch
         uses: actions/checkout@v4
