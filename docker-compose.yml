@@ -9,8 +9,8 @@ services:
     ports:
       - 7006:7001
     working_dir: /app
-    env_file:
-      - .env     
+    volumes:
+      - .env:/app/.env    
     depends_on:
       - dev_db
 
@@ -20,8 +20,7 @@ services:
     restart: always
     volumes:
       - dev_db:/var/lib/postgresql/data
-    env_file:
-      - .env            
+      - .env:/app/.env            
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD?Variable not set}
       - POSTGRES_USER=${DB_USER?Variable not set}
