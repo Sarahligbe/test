@@ -33,7 +33,7 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             docker load --input /home/${{ secrets.USERNAME }}/python-test/dev.tar.gz
-            cat .env
+            cat /home/${{ secrets.USERNAME }}/python-test/.env
             docker compose -f /home/${{ secrets.USERNAME }}/python-test/docker-compose.yml up -d
             rm -f /home/${{ secrets.USERNAME }}/python-test/dev.tar.gz
 
