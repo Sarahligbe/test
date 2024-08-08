@@ -33,6 +33,7 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             cd /home/${{ secrets.USERNAME }}/python-test
+            git pull origin main
             docker load --input dev.tar.gz
             docker compose -f docker-compose.yml up -d
             rm -f dev.tar.gz
