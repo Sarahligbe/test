@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout to branch
         uses: actions/checkout@v4
+      - name: Copy .env.sample to .env
+        run: cp .env.sample .env
       - id: deploy
         name: Pull Request Deploy
         uses: hngprojects/pr-deploy@dev
