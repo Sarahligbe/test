@@ -16,7 +16,7 @@ jobs:
         run: cp .env.sample .env
       - id: deploy
         name: Pull Request Deploy
-        uses: hngprojects/pr-deploy@dev
+        uses: hngprojects/pr-deploy@main
         with:
           server_host: ${{ secrets.HOST }}
           server_username: ${{ secrets.USERNAME }}
