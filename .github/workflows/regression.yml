@@ -24,8 +24,8 @@ jobs:
 
       - name: Run Newman Tests
         run: |
-          chmod +x test-newman.sh
-          ./test-newman.sh
+          chmod +x qatests/test-newman.sh
+          ./qatests/test-newman.sh
 
       - name: Archive HTML report
         uses: actions/upload-artifact@v3
