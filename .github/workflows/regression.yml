@@ -44,7 +44,7 @@ jobs:
           name: newman-report
           path: newman-reports/
 
-       - name: Post Report Link in PR
-         uses: marocchino/sticky-pull-request-comment@v2
-         with:
-           path: newman-reports/htmlreport.html
+      - name: Post Report Link in PR
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: newman-reports/htmlreport.html
