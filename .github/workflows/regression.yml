@@ -25,7 +25,7 @@ jobs:
 
       # Make directory to upload the test results
       - name: Make Directory for results
-        run: mkdir -p testResults
+        run: mkdir -p testResults && mkdir -p downloaded-reports
 
       - name: Run Newman Tests here
         run: |
@@ -36,3 +36,9 @@ jobs:
         with:
           name: newman-report
           path: testResults/
+
+      - name: Download newman report
+        uses: actions/download-artifact@v3
+        with:
+          name: newman-report
+          path: downloaded-reports
