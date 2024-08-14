@@ -26,45 +26,25 @@ jobs:
 
       # Make directory to upload the test results
       - name: Make Directory for results
-        run: mkdir -p testResults && mkdir -p downloaded-reports
+        run: mkdir -p testResults && mkdir -p newman-reports
 
       - name: Run Newman Tests here
         run: |
           newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html --reporter-htmlextra-darkTheme --suppress-exit-code
 
       - name: Archive HTML report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: newman-report
           path: testResults/
 
-      - name: Get Artifact Download URL
-        id: get_artifact_url
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Fetch artifact ID
-          ARTIFACT_ID=$(curl -s -X GET -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/${{ github.repository }}/actions/artifacts | \
-            jq -r '.artifacts[] |
-              select(.name == "newman-report") |
-              select(.expired == false) |
-              .id')
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: newman-report
+          path: newman-reports/
 
-          # Fetch artifact download URL
-          ARTIFACT_URL=$(curl -s -X GET -H "Authorization: token $GITHUB_TOKEN" \
-            https://api.github.com/repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip | \
-            jq -r '.archive_download_url')
-
-          # Set artifact URL as environment variable
-          echo "ARTIFACT_URL=$ARTIFACT_URL" >> $GITHUB_ENV
-
-
-      - name: Comment on PR with Report URL
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          COMMENT="Your Newman test report is available [here](${{ env.ARTIFACT_URL }})."
-          curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
-            -d "{\"body\": \"$COMMENT\"}" \
-            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments
+       - name: Post Report Link in PR
+         uses: marocchino/sticky-pull-request-comment@v2
+         with:
+           path: newman-reports/htmlreport.html
