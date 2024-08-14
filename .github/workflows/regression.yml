@@ -46,5 +46,7 @@ jobs:
 
       - name: Post Report Link in PR
         uses: marocchino/sticky-pull-request-comment@v2
+        permissions:
+          pull-requests: write
         with:
           path: newman-reports/htmlreport.html
