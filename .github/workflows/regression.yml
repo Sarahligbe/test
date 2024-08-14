@@ -37,8 +37,27 @@ jobs:
           name: newman-report
           path: testResults/
 
-      - name: Download newman report
-        uses: actions/download-artifact@v3
-        with:
-          name: newman-report
-          path: downloaded-reports
+      - name: Get Artifact Download URL
+        id: get_artifact_url
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ARTIFACT_ID=$(curl -X POST -H "Authorization: token $GITHUB_TOKEN" /repos/${{ github.repository }}/actions/artifacts \
+            --jq ".artifacts[] |
+            select(.name==\"newman-report\") |
+            select(.expired==false) |
+            .id")
+
+          ARTIFACT_URL=$(curl -X POST -H "Authorization: token $GITHUB_TOKEN" /repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip \
+            --jq ".archive_download_url")
+
+          echo "ARTIFACT_URL=$ARTIFACT_URL" >> $GITHUB_ENV
+
+      - name: Comment on PR with Report URL
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COMMENT="Your Newman test report is available [here](${{ env.ARTIFACT_URL }})."
+          curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
+            -d "{\"body\": \"$COMMENT\"}" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments
