@@ -16,19 +16,23 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "16" # Use the Node.js version that matches your environment
+          node-version: "16" 
 
       - name: Install Newman and HTML reporter
         run: |
-          npm install -g newman newman-reporter-html
+          npm install -g newman
+          npm install -g newman-reporter-htmlextra
 
-      - name: Run Newman Tests
+      # Make directory to upload the test results
+      - name: Make Directory for results
+        run: mkdir -p testResults
+
+      - name: Run Newman Tests here
         run: |
-          chmod +x qatests/test-newman.sh
-          ./qatests/test-newman.sh
+          newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html --reporter-htmlextra-darkTheme --suppress-exit-code
 
       - name: Archive HTML report
         uses: actions/upload-artifact@v3
         with:
           name: newman-report
-          path: newman-reports/
+          path: testResults/

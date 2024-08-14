@@ -8,7 +8,7 @@
 # mkdir -p $OUTPUT_DIR
 
 # Run Newman with HTML reporter
-newman run aivideo_be/qa_tests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra
+newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra
 
 # newman run your-collection.json -r htmlextra --reporter-htmlextra-export newman-reports/report.html
 
