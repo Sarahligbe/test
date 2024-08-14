@@ -9,6 +9,9 @@ jobs:
   run-newman:
     runs-on: ubuntu-latest
 
+    permissions:
+      pull-requests: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,7 +49,5 @@ jobs:
 
       - name: Post Report Link in PR
         uses: marocchino/sticky-pull-request-comment@v2
-        permissions:
-          pull-requests: write
         with:
           path: newman-reports/htmlreport.html
