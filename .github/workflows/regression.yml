@@ -11,6 +11,7 @@ jobs:
 
     permissions:
       pull-requests: write
+      actions: read
 
     steps:
       - name: Checkout repository
@@ -36,19 +37,15 @@ jobs:
           newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport.html --reporter-htmlextra-darkTheme --suppress-exit-code
 
       - name: Archive HTML report
+        id: artifact-upload-step
         uses: actions/upload-artifact@v4
         with:
           name: newman-report
           path: testResults/
 
-      - name: Download artifact
-        uses: actions/download-artifact@v4
+      - name: Post Report Link in PR
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
-          name: newman-report
-          path: newman-reports/
+          message: |
+            The newman reports are available to view here ${{ steps.artifact-upload-step.outputs.artifact-url }}
 
-      - name: HTML Preview
-        id: html_preview
-        uses: pavi2410/html-preview-action@v2
-        with:
-          html_file: 'newman-reports/htmlreport.html'
