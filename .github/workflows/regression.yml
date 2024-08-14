@@ -43,14 +43,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ARTIFACT_ID=$(curl -X POST -H "Authorization: token $GITHUB_TOKEN" /repos/${{ github.repository }}/actions/artifacts \
-            --jq ".artifacts[] |
+          ARTIFACT_ID=$(curl -X POST -H "Authorization: token $GITHUB_TOKEN" /repos/${{ github.repository }}/actions/artifacts | \
+            jq -r ".artifacts[] |
             select(.name==\"newman-report\") |
             select(.expired==false) |
             .id")
 
-          ARTIFACT_URL=$(curl -X POST -H "Authorization: token $GITHUB_TOKEN" /repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip \
-            --jq ".archive_download_url")
+          ARTIFACT_URL=$(curl -X POST -H "Authorization: token $GITHUB_TOKEN" /repos/${{ github.repository }}/actions/artifacts/${ARTIFACT_ID}/zip | \
+            jq ".archive_download_url")
 
           echo "ARTIFACT_URL=$ARTIFACT_URL" >> $GITHUB_ENV
 
