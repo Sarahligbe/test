@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    paths-ignore:
+      - ".github/workflows/**"
+  workflow_dispatch:
+  
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build image
+        if: github.event.pull_request.state != 'closed'
+        run: docker build -t telehealth-dev:latest -f Dockerfile .
+
+      - name: Save image 
+        if: github.event.pull_request.state != 'closed'
+        run: docker save telehealth-dev:latest | gzip > telehealth-dev.tar.gz
+
+      - name: Copy image to server
+        if: github.event.pull_request.state != 'closed'
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          source: "telehealth-dev.tar.gz"
+          target: "/home/${{ secrets.USERNAME }}/telehealth"
+
+
+      - name: Deploy image on server
+        if: github.event.pull_request.state != 'closed'
+        uses: appleboy/ssh-action@master
+        id: deploy
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            cd /home/${{ secrets.USERNAME }}/telehealth
+            git checkout dev
+            git pull origin dev
+            gunzip -c telehealth-dev.tar.gz | docker load
+            docker compose -f compose.dev.yaml up -d
+            rm -f telehealth-dev.tar.gz
+      
+      - name: Comment on PR with deployment URL
+        if: github.event.pull_request.state != 'closed'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
+            -d "{\"body\": \"Your deployment is available at ${{ secrets.DEV_URL }}\"}" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments
+
+      - name: Tear down deployment
+        if: github.event.pull_request.state == 'closed'
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            cd /home/${{ secrets.USERNAME }}/telehealth
+            docker compose -f compose.dev.yaml down
+            docker rmi telehealth-dev:latest
