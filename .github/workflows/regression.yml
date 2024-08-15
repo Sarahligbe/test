@@ -3,6 +3,8 @@ name: Run Regression Newman Tests
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
+    branches: [dev, staging, main]
 
 
 jobs:
