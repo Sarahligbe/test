@@ -1,4 +1,4 @@
-name: Run Newman Tests
+name: Run Regression Newman Tests
 
 on:
   pull_request:
