@@ -35,9 +35,15 @@ jobs:
         run: mkdir -p testResults
 
       - name: Run Newman Tests here
+        if: github.event_name == 'pull_request'
         run: |
           newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport-pr-${{ github.event.pull_request.number }}.html --reporter-htmlextra-darkTheme --suppress-exit-code
 
+      - name: Run Newman Tests here
+        if: github.event_name == 'push'
+        run: |
+          newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport-pr-${{ github.event.pull_request.number }}-merged.html --reporter-htmlextra-darkTheme --suppress-exit-code
+      
       - name: Archive HTML report
         id: artifact-upload-step
         uses: actions/upload-artifact@v4
