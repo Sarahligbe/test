@@ -32,7 +32,7 @@ jobs:
 
       # Make directory to upload the test results
       - name: Make Directory for results
-        run: mkdir -p testResults && mkdir -p newman-reports
+        run: mkdir -p testResults
 
       - name: Run Newman Tests here
         run: |
@@ -45,16 +45,9 @@ jobs:
           name: newman-report
           path: testResults/
 
-      - name: Download artifact
-        id: artifact-download-step
-        uses: actions/download-artifact@v4
-        with:
-          name: newman-report
-          path: newman-reports
-
       - name: Post Report Link in PR
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: |
-            The newman reports are available to view here ${{ steps.artifact-download-step.outputs.download-path }}
+            The newman reports are available to view here ${{ steps.artifact-upload-step.outputs.artifact-url }}
 
