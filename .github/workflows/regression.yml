@@ -2,7 +2,9 @@ name: Run Regression Newman Tests
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, reopened]
+    branches: [dev, staging, main]
+  push:
     branches: [dev, staging, main]
 
 
@@ -27,21 +29,25 @@ jobs:
         run: |
           npm install -g newman
           npm install -g newman-reporter-htmlextra
-          sudo apt install jq
 
       # Make directory to upload the test results
       - name: Make Directory for results
         run: mkdir -p testResults
 
       - name: Run Newman Tests here
-        if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize')
+        if: github.event_name == 'pull_request' 
         run: |
           newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport-pr-${{ github.event.pull_request.number }}.html --reporter-htmlextra-darkTheme --suppress-exit-code
 
+      - name: Find PR number
+        if: github.event_name == 'push' 
+        uses: jwalton/gh-find-current-pr@v1
+        id: finder
+        
       - name: Run Newman Tests on push here
-        if: github.event_name == 'pull_request' && (github.event.action == 'closed' && github.event.pull_request.merged == true)
+        if: github.event_name == 'push' 
         run: |
-          newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport-pr-${{ github.event.pull_request.number }}-merged.html --reporter-htmlextra-darkTheme --suppress-exit-code
+          newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport-pr-${{ steps.finder.outputs.pr }}-merged.html --reporter-htmlextra-darkTheme --suppress-exit-code
       
       - name: Archive HTML report
         id: artifact-upload-step
@@ -51,16 +57,17 @@ jobs:
           path: testResults/
 
       - name: Post Report Link in PR
-        if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize')
+        if: github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: |
             The newman reports are available to view here ${{ steps.artifact-upload-step.outputs.artifact-url }}
 
       - name: Post Report Link in PR
-        if: github.event_name == 'pull_request' && (github.event.action == 'closed' && github.event.pull_request.merged == true)
+        if: github.event_name == 'push'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
+          number: ${{ steps.finder.outputs.pr }}
           message: |
             The newman reports are available to view here ${{ steps.artifact-upload-step.outputs.artifact-url }}
 
