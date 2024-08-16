@@ -2,8 +2,7 @@ name: Run Regression Newman Tests
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-  push:
+    types: [opened, synchronize, reopened. closed]
     branches: [dev, staging, main]
 
 
@@ -40,7 +39,7 @@ jobs:
           newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport-pr-${{ github.event.pull_request.number }}.html --reporter-htmlextra-darkTheme --suppress-exit-code
 
       - name: Run Newman Tests on push here
-        if: github.event_name == 'push'
+        if: github.event_name == 'pull_request' && (github.event.action == 'closed' && github.event.pull_request.merged == true)
         run: |
           newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport-pr-${{ github.event.pull_request.number }}-merged.html --reporter-htmlextra-darkTheme --suppress-exit-code
       
@@ -52,17 +51,17 @@ jobs:
           path: testResults/
 
       - name: Post Report Link in PR
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'synchronize')
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           message: |
             The newman reports are available to view here ${{ steps.artifact-upload-step.outputs.artifact-url }}
 
-      - name: Comment on PR
-        if: github.event_name == 'push'
-        uses: peter-evans/create-or-update-comment@v2
+      - name: Post Report Link in PR
+        if: github.event_name == 'pull_request' && (github.event.action == 'closed' && github.event.pull_request.merged == true)
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            This is a comment added to the PR when the action is pushed ${{ steps.artifact-upload-step.outputs.artifact-url }}
+          message: |
+            The newman reports are available to view here ${{ steps.artifact-upload-step.outputs.artifact-url }}
 
+     
