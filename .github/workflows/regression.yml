@@ -41,13 +41,15 @@ jobs:
 
       - name: Find PR number
         if: github.event_name == 'push' 
-        uses: jwalton/gh-find-current-pr@v1
-        id: finder
+        uses: jwalton/gh-find-current-pr@master
+        with:
+          state: closed
+        id: findPr
         
       - name: Run Newman Tests on push here
         if: github.event_name == 'push' 
         run: |
-          newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport-pr-${{ steps.finder.outputs.pr }}-merged.html --reporter-htmlextra-darkTheme --suppress-exit-code
+          newman run qatests/regression/HNG-Stage-7-Team-Anchor.postman_collection.json -r htmlextra --reporter-htmlextra-export testResults/htmlreport-pr-${{ steps.findPr.outputs.pr }}-merged.html --reporter-htmlextra-darkTheme --suppress-exit-code
       
       - name: Archive HTML report
         id: artifact-upload-step
@@ -67,7 +69,8 @@ jobs:
         if: github.event_name == 'push'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          number: ${{ steps.finder.outputs.pr }}
+          header: push report
+          number: ${{ steps.findPr.outputs.pr }}
           message: |
             The newman reports are available to view here ${{ steps.artifact-upload-step.outputs.artifact-url }}
 
